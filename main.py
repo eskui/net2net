@@ -11,7 +11,7 @@ import pickle
 
 
 EPOCH = 50
-N_GPUS = 2
+N_GPUS = 1
 
 #GPU configurations
 device_type = 'GPU'
@@ -34,7 +34,7 @@ X_valid=X_valid.reshape(-1,32,32,3)
 
 def trainer(model):
     return  model.fit(X_train, y_train, epochs=EPOCH, batch_size=64,
-                            validation_data=(X_valid, y_valid), verbose=2)
+                            validation_split=0.1, shuffle = 1, verbose=2)
 
 
 def train_a_teacher_network():
@@ -55,8 +55,9 @@ def train_a_teacher_network():
                       metrics=["accuracy"])
     print("Train a teacher...")
     history = trainer(model)
+    test = model.evaluate(X_valid, y_valid, verbose=0)
 
-    results = { 'loss': history.history['loss'], 'val_loss': history.history['val_loss'], 'accuracy': history.history['accuracy'], 'val_accuracy': history.history['val_accuracy']}
+    results = [history.history, { 'test_loss': test[0], 'test_accuracy': test[1]}]
     filename = "teacher_stats.pck"
     with open(filename, 'wb') as handle:
         pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -87,8 +88,9 @@ def train_a_student_network_wider(model_teacher):
     #train the  model
     print("Train a wider student network...")
     history = trainer(model)
+    test = model.evaluate(X_valid, y_valid, verbose=0)
 
-    results = { 'loss': history.history['loss'], 'val_loss': history.history['val_loss'], 'accuracy': history.history['accuracy'], 'val_accuracy': history.history['val_accuracy']}
+    results = [history.history, { 'test_loss': test[0], 'test_accuracy': test[1]}]
     filename = "st_wider_stats.pck"
     with open(filename, 'wb') as handle:
         pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -118,8 +120,9 @@ def train_a_student_network_deeper(model_teacher):
 
     print("Train a deeper student network...")
     history = trainer(model)
+    test = model.evaluate(X_valid, y_valid, verbose=0)
 
-    results = { 'loss': history.history['loss'], 'val_loss': history.history['val_loss'], 'accuracy': history.history['accuracy'], 'val_accuracy': history.history['val_accuracy']}
+    results = [history.history, { 'test_loss': test[0], 'test_accuracy': test[1]}]
     filename = "st_deeper_stats.pck"
     with open(filename, 'wb') as handle:
         pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -145,8 +148,9 @@ def train_baseline_network_deeper():
 
     print("Train a baseline network...")
     history = trainer(model)
+    test = model.evaluate(X_valid, y_valid, verbose=0)
 
-    results = { 'loss': history.history['loss'], 'val_loss': history.history['val_loss'], 'accuracy': history.history['accuracy'], 'val_accuracy': history.history['val_accuracy']}
+    results = [history.history, { 'test_loss': test[0], 'test_accuracy': test[1]}]
     filename = "baseline_stats.pck"
     with open(filename, 'wb') as handle:
         pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
