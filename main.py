@@ -10,7 +10,7 @@ from net2net import Net2Net
 import pickle
 
 
-EPOCH = 50
+EPOCH = 1
 N_GPUS = 1
 
 #GPU configurations
@@ -33,8 +33,10 @@ X_train=X_train.reshape(-1,32,32,3)
 X_valid=X_valid.reshape(-1,32,32,3)
 
 def trainer(model):
+    log_dir = "logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     return  model.fit(X_train, y_train, epochs=EPOCH, batch_size=64,
-                            validation_split=0.1, shuffle = 1, verbose=2)
+                            validation_split=0.1, shuffle = 1, verbose=2, callbacks=[tensorboard_callback])
 
 
 def train_a_teacher_network():
@@ -49,7 +51,7 @@ def train_a_teacher_network():
             tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
             tf.keras.layers.Dense(10, activation="softmax")
         ])
-        opt = tf.keras.optimizers.SGD(learning_rate=0.001, momentum = 0.9)
+        opt = tf.keras.optimizers.Adam()
         model.compile(loss="sparse_categorical_crossentropy",
                       optimizer=opt,
                       metrics=["accuracy"])
@@ -77,7 +79,7 @@ def train_a_student_network_wider(model_teacher):
             tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
             tf.keras.layers.Dense(10, activation="softmax")
         ])
-        opt = tf.keras.optimizers.SGD(learning_rate=0.001, momentum = 0.9)
+        opt = tf.keras.optimizers.Adam()
         model.compile(loss="sparse_categorical_crossentropy",
                       optimizer=opt,
                       metrics=["accuracy"])
@@ -111,7 +113,7 @@ def train_a_student_network_deeper(model_teacher):
             tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
             tf.keras.layers.Dense(10, activation="softmax")
         ])
-        opt = tf.keras.optimizers.SGD(learning_rate=0.001, momentum = 0.9)
+        opt = tf.keras.optimizers.Adam()
         model.compile(loss="sparse_categorical_crossentropy",
                       optimizer=opt,
                       metrics=["accuracy"])
@@ -141,7 +143,7 @@ def train_baseline_network_deeper():
             tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
             tf.keras.layers.Dense(10, activation="softmax")
         ])
-        opt = tf.keras.optimizers.SGD(learning_rate=0.001, momentum = 0.9)
+        opt = tf.keras.optimizers.Adam()
         model.compile(loss="sparse_categorical_crossentropy",
                       optimizer=opt,
                       metrics=["accuracy"])
