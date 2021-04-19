@@ -8,6 +8,7 @@ from slim import scopes
 from slim import variables
 from net2net import Net2Net
 import pickle
+import datetime
 
 
 EPOCH = 1
