@@ -15,10 +15,10 @@ EPOCH = 1
 N_GPUS = 1
 
 #GPU configurations
-device_type = 'GPU'
-devices = tf.config.experimental.list_physical_devices(device_type)
-devices_names = [d.name.split('e:')[1] for d in devices]
-strategy = tf.distribute.MirroredStrategy(devices=devices_names[:N_GPUS])
+#device_type = 'GPU'
+#devices = tf.config.experimental.list_physical_devices(device_type)
+#devices_names = [d.name.split('e:')[1] for d in devices]
+#strategy = tf.distribute.MirroredStrategy(devices=devices_names[:N_GPUS])
 
 #Load data
 (train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.cifar10.load_data()
@@ -41,21 +41,21 @@ def trainer(model):
 
 
 def train_a_teacher_network():
-    with strategy.scope():
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Conv2D(filters=16, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu", input_shape=[32,32,3]),
-            tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.MaxPool2D(pool_size=2),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.MaxPool2D(pool_size=2),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
-            tf.keras.layers.Dense(10, activation="softmax")
-        ])
-        opt = tf.keras.optimizers.Adam()
-        model.compile(loss="sparse_categorical_crossentropy",
-                      optimizer=opt,
-                      metrics=["accuracy"])
+    #with strategy.scope():
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Conv2D(filters=16, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu", input_shape=[32,32,3]),
+        tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.MaxPool2D(pool_size=2),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.MaxPool2D(pool_size=2),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
+        tf.keras.layers.Dense(10, activation="softmax")
+    ])
+    opt = tf.keras.optimizers.Adam()
+    model.compile(loss="sparse_categorical_crossentropy",
+                  optimizer=opt,
+                  metrics=["accuracy"])
     print("Train a teacher...")
     history = trainer(model)
     test = model.evaluate(X_valid, y_valid, verbose=0)
@@ -69,21 +69,21 @@ def train_a_teacher_network():
 def train_a_student_network_wider(model_teacher):
     new_width_conv = 32
     l = 0 #first layer will be made wider
-    with strategy.scope():
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Conv2D(filters=new_width_conv, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu", input_shape=[32,32,3]),
-            tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.MaxPool2D(pool_size=2),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.MaxPool2D(pool_size=2),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
-            tf.keras.layers.Dense(10, activation="softmax")
-        ])
-        opt = tf.keras.optimizers.Adam()
-        model.compile(loss="sparse_categorical_crossentropy",
-                      optimizer=opt,
-                      metrics=["accuracy"])
+    #with strategy.scope():
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Conv2D(filters=new_width_conv, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu", input_shape=[32,32,3]),
+        tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.MaxPool2D(pool_size=2),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.MaxPool2D(pool_size=2),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
+        tf.keras.layers.Dense(10, activation="softmax")
+    ])
+    opt = tf.keras.optimizers.Adam()
+    model.compile(loss="sparse_categorical_crossentropy",
+                  optimizer=opt,
+                  metrics=["accuracy"])
 
     # initialize new weights and biases for the first (0) layer that has new width
     model = net_to_wider(model_teacher,model,l,new_width_conv)
@@ -102,22 +102,22 @@ def train_a_student_network_wider(model_teacher):
 def train_a_student_network_deeper(model_teacher):
 
     l=3 #an additional fourth layer is added after the thrid layer, first layer is 0
-    with strategy.scope():
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu", input_shape=[32,32,3]),
-            tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.MaxPool2D(pool_size=2),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.MaxPool2D(pool_size=2),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
-            tf.keras.layers.Dense(10, activation="softmax")
-        ])
-        opt = tf.keras.optimizers.Adam()
-        model.compile(loss="sparse_categorical_crossentropy",
-                      optimizer=opt,
-                      metrics=["accuracy"])
+    #with strategy.scope():
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu", input_shape=[32,32,3]),
+        tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.MaxPool2D(pool_size=2),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.MaxPool2D(pool_size=2),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
+        tf.keras.layers.Dense(10, activation="softmax")
+    ])
+    opt = tf.keras.optimizers.Adam()
+    model.compile(loss="sparse_categorical_crossentropy",
+                  optimizer=opt,
+                  metrics=["accuracy"])
 
     model = net_to_deeper(model_teacher,model,l)
 
@@ -132,22 +132,22 @@ def train_a_student_network_deeper(model_teacher):
     return model
 
 def train_baseline_network_deeper():
-    with strategy.scope():
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu", input_shape=[32,32,3]),
-            tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.MaxPool2D(pool_size=2),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
-            tf.keras.layers.MaxPool2D(pool_size=2),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
-            tf.keras.layers.Dense(10, activation="softmax")
-        ])
-        opt = tf.keras.optimizers.Adam()
-        model.compile(loss="sparse_categorical_crossentropy",
-                      optimizer=opt,
-                      metrics=["accuracy"])
+    #with strategy.scope():
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu", input_shape=[32,32,3]),
+        tf.keras.layers.Conv2D(filters=32, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.MaxPool2D(pool_size=2),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=3, kernel_initializer='he_uniform', padding="same", activation="relu"),
+        tf.keras.layers.MaxPool2D(pool_size=2),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation="relu", kernel_initializer='he_uniform'),
+        tf.keras.layers.Dense(10, activation="softmax")
+    ])
+    opt = tf.keras.optimizers.Adam()
+    model.compile(loss="sparse_categorical_crossentropy",
+                  optimizer=opt,
+                  metrics=["accuracy"])
 
     print("Train a baseline network...")
     history = trainer(model)
